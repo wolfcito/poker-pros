@@ -4,13 +4,18 @@ import { useState, useEffect, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Input } from '~/components/ui/input'
 import { Button } from '~/components/ui/button'
-import { ArrowUp, Search } from 'lucide-react'
+import { ArrowUp, Search, Volume2 } from 'lucide-react'
 import { terms } from '~/const/terms.const'
 
 export function GlossaryContent() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredTerms, setFilteredTerms] = useState(terms)
   const [showBackToTop, setShowBackToTop] = useState(false)
+
+  useEffect(() => {
+    const voices = window.speechSynthesis.getVoices()
+    console.log('Voces disponibles:', voices)
+  }, [])
 
   const handleSearch = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,6 +33,25 @@ export function GlossaryContent() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const readText = (text: string) => {
+    const utterance = new SpeechSynthesisUtterance(text)
+
+    utterance.lang = 'es-ES'
+    utterance.pitch = 1.1
+    utterance.rate = 1.0
+    utterance.volume = 0.8
+
+    const voices = window.speechSynthesis.getVoices()
+    const selectedVoice = voices.find(
+      (voice) => voice.name.includes('Google') && voice.lang === 'es-ES',
+    )
+    if (selectedVoice) {
+      utterance.voice = selectedVoice
+    }
+
+    window.speechSynthesis.speak(utterance)
   }
 
   useEffect(() => {
@@ -64,10 +88,17 @@ export function GlossaryContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="bg-card rounded-lg p-6 shadow-md"
+              className="bg-card rounded-lg p-6 shadow-md relative"
             >
               <h2 className="text-2xl font-semibold mb-2">{term.title}</h2>
-              <p className="text-card-foreground">{term.description}</p>
+              <p className="text-card-foreground mb-4">{term.description}</p>
+              <Button
+                onClick={() => readText(`${term.title}: ${term.description}`)}
+                aria-label="Leer término"
+                className="absolute top-4 right-4 flex items-center justify-center"
+              >
+                <Volume2 size={20} />
+              </Button>
             </motion.div>
           ))}
         </AnimatePresence>
