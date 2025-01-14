@@ -12,9 +12,20 @@ export function GlossaryContent() {
   const [filteredTerms, setFilteredTerms] = useState(terms)
   const [showBackToTop, setShowBackToTop] = useState(false)
 
+  let isSpeaking = false
+
   useEffect(() => {
-    const voices = window.speechSynthesis.getVoices()
-    console.log('Voces disponibles:', voices)
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices()
+      console.log('Voces disponibles:', voices)
+    }
+
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoices)
+    loadVoices()
+
+    return () => {
+      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices)
+    }
   }, [])
 
   const handleSearch = useCallback(
@@ -36,19 +47,38 @@ export function GlossaryContent() {
   }
 
   const readText = (text: string) => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel()
+    }
+
     const utterance = new SpeechSynthesisUtterance(text)
 
     utterance.lang = 'es-ES'
     utterance.pitch = 1.1
-    utterance.rate = 1.0
-    utterance.volume = 0.8
+    utterance.rate = 0.95
+    utterance.volume = 1.0
 
     const voices = window.speechSynthesis.getVoices()
     const selectedVoice = voices.find(
-      (voice) => voice.name.includes('Google') && voice.lang === 'es-ES',
+      (voice) =>
+        voice.lang === 'es-ES' && voice.name.toLowerCase().includes('google'),
     )
+
     if (selectedVoice) {
       utterance.voice = selectedVoice
+    }
+
+    utterance.onstart = () => {
+      isSpeaking = true
+    }
+
+    utterance.onend = () => {
+      isSpeaking = false
+    }
+
+    utterance.onerror = (event) => {
+      console.error('Error al sintetizar la voz:', event.error)
+      isSpeaking = false
     }
 
     window.speechSynthesis.speak(utterance)
