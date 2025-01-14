@@ -16,7 +16,10 @@ export function GlossaryContent() {
 
   useEffect(() => {
     const loadVoices = () => {
-      const voices = window.speechSynthesis.getVoices()
+      const voices = window.speechSynthesis
+        .getVoices()
+        .filter((voice) => voice.lang === 'es-ES')
+
       console.log('Voces disponibles:', voices)
     }
 
@@ -58,13 +61,19 @@ export function GlossaryContent() {
     utterance.rate = 0.95
     utterance.volume = 1.0
 
-    const voices = window.speechSynthesis.getVoices()
+    const voices = window.speechSynthesis
+      .getVoices()
+      .filter((voice) => voice.lang === 'es-ES')
+
+    voices.forEach(
+      (voice) => voice.lang === 'es-ES' && console.log('Voz:', voice),
+    )
     const selectedVoice = voices.find(
-      (voice) =>
-        voice.lang === 'es-ES' && voice.name.toLowerCase().includes('google'),
+      (voice) => voice.lang === 'es-ES' && voice.name === 'Google español',
     )
 
     if (selectedVoice) {
+      console.log('Voz seleccionada:', selectedVoice)
       utterance.voice = selectedVoice
     }
 
