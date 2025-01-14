@@ -19,7 +19,7 @@ import {
   SidebarMenuButton,
 } from '~/components/ui/sidebar'
 
-const navItems = [{ title: 'Glosario', url: '/glosary' }]
+const navItems = [{ title: 'Glosario', url: '/' }]
 
 export function AppSidebar() {
   const pathname = usePathname()
